@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuario;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -53,6 +54,50 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Registro exitoso',
         ], 201);
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ], [
+            'email.required' => 'El correo es obligatorio',
+            'email.email' => 'Correo inválido',
+            'password.required' => 'La contraseña es obligatoria',
+        ]);
+
+        if (!$this->isValidEmail($request->email)) {
+            return response()->json([
+                'errors' => [
+                    'email' => ['El correo tiene un formato inválido o extensión mal escrita']
+                ]
+            ], 422);
+        }
+
+        $usuario = Usuario::where('email', strtolower($request->email))->first();
+
+        if (!$usuario) {
+            return response()->json([
+                'message' => 'El correo no está registrado'
+            ], 401);
+        }
+
+        if (!Hash::check($request->password, $usuario->password)) {
+            return response()->json([
+                'message' => 'Contraseña incorrecta'
+            ], 401);
+        }
+
+        $usuario->tokens()->delete();
+
+        $token = $usuario->createToken('login-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Login exitoso',
+            'token' => $token,
+            'usuario' => $usuario,
+        ], 200);
     }
 
     private function isValidEmail($email)
