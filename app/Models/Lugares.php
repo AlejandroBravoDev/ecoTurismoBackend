@@ -34,7 +34,6 @@ class Lugares extends Model
         'imagenes_url',
     ];
 
-
     public function getImagenPrincipalUrlAttribute()
     {
         if (empty($this->imagenes)) {
@@ -55,12 +54,12 @@ class Lugares extends Model
         )->toArray();
     }
 
-
     public function municipio()
     {
         return $this->belongsTo(Municipios::class, 'municipio_id');
     }
 
+    
     public function usuario()
     {
         return $this->belongsTo(Usuario::class, 'usuario_id');
