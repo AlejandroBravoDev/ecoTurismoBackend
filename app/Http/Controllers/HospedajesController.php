@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-class HospedajeController extends Controller
+class HospedajesController extends Controller
 {
     /**
      * Helper para obtener la URL completa de la primera imagen.
