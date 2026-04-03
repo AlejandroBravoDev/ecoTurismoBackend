@@ -6,12 +6,11 @@ use App\Models\Hospedaje;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class HospedajesController extends Controller
 {
-    /**
-     * Helper para obtener la URL completa de la primera imagen.
-     */
+
     private function getImagenPrincipalUrl($imagenes)
     {
         if (empty($imagenes) || !is_array($imagenes)) {
@@ -32,7 +31,6 @@ class HospedajesController extends Controller
         try {
             $query = Hospedaje::with(['municipio']);
 
-            // 🔍 Filtro de búsqueda
             if ($request->has('search') && !empty($request->search)) {
                 $searchTerm = $request->search;
                 $query->where(function ($q) use ($searchTerm) {
@@ -42,7 +40,6 @@ class HospedajesController extends Controller
                 });
             }
 
-            // 🏙️ Filtro por municipio
             if ($request->has('municipio_id') && $request->municipio_id != 0) {
                 $query->where('municipio_id', $request->municipio_id);
             }
@@ -75,7 +72,7 @@ class HospedajesController extends Controller
     public function show($id)
     {
         try {
-            $hospedaje = Hospedaje::with(['municipio'])->findOrFail($id);
+            $hospedaje = Hospedaje::with(['municipio', 'opiniones.usuario'])->findOrFail($id);
 
             $imagenesPaths = $hospedaje->imagenes ?? [];
             $todasLasImagenesUrls = collect($imagenesPaths)->map(function ($path) {
@@ -95,6 +92,19 @@ class HospedajesController extends Controller
                 'ubicacion' => $hospedaje->ubicacion,
                 'tipo' => $hospedaje->tipo,
                 'contacto' => $hospedaje->contacto,
+                'comentarios' => $hospedaje->opiniones->map(function ($comentario) {
+                    return [
+                        'id' => $comentario->id,
+                        'contenido' => $comentario->contenido,
+                        'rating' => $comentario->rating, 
+                        'created_at' => $comentario->created_at->toDateTimeString(),
+                        'user' => [
+                            'id' => optional($comentario->usuario)->id,
+                            'name' => optional($comentario->usuario)->nombre_completo,
+                            'avatar' => optional($comentario->usuario)->avatar_url,
+                        ]
+                    ];
+                }),
             ], 200);
 
         } catch (\Exception $e) {

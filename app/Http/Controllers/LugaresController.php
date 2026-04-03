@@ -27,7 +27,8 @@ class LugaresController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Lugares::with(['municipio']);
+            // Se agrega 'opiniones' a la carga para el index
+            $query = Lugares::with(['municipio', 'opiniones']);
 
             if ($request->has('municipio_id') && !empty($request->municipio_id)) {
                 $query->where('municipio_id', $request->municipio_id);
@@ -52,6 +53,10 @@ class LugaresController extends Controller
                     'municipio_id' => $lugar->municipio_id,
                     'imagen_url' => $this->getImagenPrincipalUrl($lugar->imagenes ?? []),
                     'ubicacion' => $lugar->ubicacion,
+                    'comentarios' => $lugar->opiniones->map(fn($op) => [
+                        'rating' => $op->rating,
+                        'category' => $op->category ?? 'General'
+                    ]),
                 ];
             });
 
@@ -65,7 +70,7 @@ class LugaresController extends Controller
     public function show($id)
     {
         try {
-            $lugar = Lugares::with(['municipio'])->findOrFail($id);
+            $lugar = Lugares::with(['municipio', 'opiniones.usuario'])->findOrFail($id);
             $imagenesPaths = $lugar->imagenes ?? []; 
             
             $todasLasImagenesUrls = collect($imagenesPaths)->map(function ($path) {
@@ -82,6 +87,22 @@ class LugaresController extends Controller
                 'todas_las_imagenes' => $todasLasImagenesUrls,
                 'ubicacion' => $lugar->ubicacion,
                 'hoteles_cercanos' => $lugar->hoteles_cercanos,
+                // Agregado del viejo: Detalle de comentarios para la HU-08
+                'comentarios' => $lugar->opiniones->map(function ($comentario) {
+                    return [
+                        'id' => $comentario->id,
+                        'contenido' => $comentario->contenido,
+                        'rating' => $comentario->rating,
+                        'category' => $comentario->category,
+                        'image_url' => $comentario->image_path ? Storage::disk('s3')->url($comentario->image_path) : null,
+                        'created_at' => $comentario->created_at->toDateTimeString(),
+                        'user' => [
+                            'id' => optional($comentario->usuario)->id,
+                            'name' => optional($comentario->usuario)->nombre_completo,
+                            'avatar' => optional($comentario->usuario)->avatar_url,
+                        ]
+                    ];
+                }),
             ], 200);
         } catch (\Exception $e) {
             Log::error('Error en LugaresController@show: ' . $e->getMessage());

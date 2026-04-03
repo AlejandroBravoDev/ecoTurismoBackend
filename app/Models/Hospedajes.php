@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Municipios;
+use App\Models\Comentarios;
 
 class Hospedaje extends Model
 {
@@ -35,5 +36,13 @@ class Hospedaje extends Model
     public function municipio()
     {
         return $this->belongsTo(Municipios::class, 'municipio_id');
+    }
+
+    /**
+     * Relación con los comentarios (HU-08)
+     */
+    public function opiniones()
+    {
+        return $this->hasMany(Comentarios::class, 'hospedaje_id')->latest();
     }
 }
