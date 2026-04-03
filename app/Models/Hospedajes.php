@@ -30,17 +30,11 @@ class Hospedaje extends Model
         'servicios' => 'array',
     ];
 
-    /**
-     * Relación con el municipio
-     */
     public function municipio()
     {
         return $this->belongsTo(Municipios::class, 'municipio_id');
     }
 
-    /**
-     * Relación con los comentarios (HU-08)
-     */
     public function opiniones()
     {
         return $this->hasMany(Comentarios::class, 'hospedaje_id')->latest();
