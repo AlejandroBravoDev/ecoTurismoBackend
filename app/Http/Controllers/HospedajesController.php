@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Hospedaje;
+use App\Models\Favorito; 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -10,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class HospedajesController extends Controller
 {
-
     private function getImagenPrincipalUrl($imagenes)
     {
         if (empty($imagenes) || !is_array($imagenes)) {
@@ -47,6 +47,13 @@ class HospedajesController extends Controller
             $hospedajes = $query->get();
 
             $hospedajesData = $hospedajes->map(function ($hospedaje) {
+                $isFavorite = false;
+                if (Auth::guard('sanctum')->check()) {
+                    $isFavorite = Favorito::where('usuario_id', Auth::guard('sanctum')->id())
+                        ->where('hospedaje_id', $hospedaje->id)
+                        ->exists();
+                }
+
                 return [
                     'id' => $hospedaje->id,
                     'nombre' => $hospedaje->nombre,
@@ -58,6 +65,7 @@ class HospedajesController extends Controller
                     'ubicacion' => $hospedaje->ubicacion,
                     'tipo' => $hospedaje->tipo,
                     'contacto' => $hospedaje->contacto,
+                    'isFavorite' => $isFavorite,
                 ];
             });
 
@@ -81,6 +89,13 @@ class HospedajesController extends Controller
                     : Storage::disk('s3')->url($path);
             })->toArray();
 
+            $isFavorite = false;
+            if (Auth::guard('sanctum')->check()) {
+                $isFavorite = Favorito::where('usuario_id', Auth::guard('sanctum')->id())
+                    ->where('hospedaje_id', $hospedaje->id)
+                    ->exists();
+            }
+
             return response()->json([
                 'id' => $hospedaje->id,
                 'nombre' => $hospedaje->nombre,
@@ -92,11 +107,13 @@ class HospedajesController extends Controller
                 'ubicacion' => $hospedaje->ubicacion,
                 'tipo' => $hospedaje->tipo,
                 'contacto' => $hospedaje->contacto,
+                'isFavorite' => $isFavorite, 
                 'comentarios' => $hospedaje->opiniones->map(function ($comentario) {
                     return [
                         'id' => $comentario->id,
-                        'contenido' => $comentario->contenido,
-                        'rating' => $comentario->rating, 
+                        'contenido' => $comentario->contenido, 
+                        'rating' => $comentario->rating,
+                        'image_url' => $comentario->image_path ? Storage::disk('s3')->url($comentario->image_path) : null,
                         'created_at' => $comentario->created_at->toDateTimeString(),
                         'user' => [
                             'id' => optional($comentario->usuario)->id,
@@ -150,7 +167,6 @@ class HospedajesController extends Controller
                     'imagen_principal_url' => $this->getImagenPrincipalUrl($imagenesGuardadas),
                 ]
             ], 201);
-
         } catch (\Exception $e) {
             Log::error('Error en HospedajeController@store: ' . $e->getMessage());
             return response()->json(['message' => 'Error al crear el hospedaje'], 500);
@@ -187,7 +203,6 @@ class HospedajesController extends Controller
             ]);
 
             return response()->json(['message' => 'Hospedaje actualizado correctamente'], 200);
-
         } catch (\Exception $e) {
             Log::error('Error en update Hospedaje: ' . $e->getMessage());
             return response()->json(['message' => 'Error al actualizar'], 500);
