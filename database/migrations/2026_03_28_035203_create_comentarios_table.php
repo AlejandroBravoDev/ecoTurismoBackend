@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('image_path', 255)->nullable();
             $table->string('category', 50)->nullable();
             $table->timestamps();
-            $table->unsignedInteger('hospedaje_id')->nullable();
+            $table->unsignedBigInteger('hospedaje_id')->nullable();
 
             $table->foreign('lugar_id')->references('id')->on('lugares')->nullOnDelete();
             $table->foreign('usuario_id')->references('id')->on('usuarios')->cascadeOnDelete();

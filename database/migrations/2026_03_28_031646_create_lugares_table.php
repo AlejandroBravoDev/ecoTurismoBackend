@@ -14,15 +14,16 @@ return new class extends Migration
         Schema::create('lugares', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 150);
-            $table->string('ubicacion', 255)->nullable();
             $table->text('descripcion')->nullable();
+            $table->string('coordenadas', 133)->nullable();
+            $table->string('ubicacion', 255)->nullable();
+            $table->unsignedBigInteger('municipio_id')->nullable();
+            $table->text('hoteles_cercanos')->nullable();
             $table->text('comentarios')->nullable();
             $table->text('imagenes')->nullable();
-            $table->unsignedBigInteger('municipio_id')->nullable();
-            $table->text('lugares')->nullable();
+            $table->text('recomendaciones')->nullable();
             $table->string('updated_at', 250)->nullable();
             $table->datetime('created_at')->nullable()->default(DB::raw('current_timestamp()'));
-            $table->string('coordenadas', 133)->nullable();
 
             $table->foreign('municipio_id')->references('id')->on('municipios')->nullOnDelete();
         });
