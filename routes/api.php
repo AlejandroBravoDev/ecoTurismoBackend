@@ -1,12 +1,13 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LugaresController;
 use App\Http\Controllers\HospedajeController;
 use App\Http\Controllers\comentariosController;
+use App\Http\Controllers\favoritosController;
 
-// Rutas Públicas
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -15,13 +16,27 @@ Route::get('/lugares/{id}', [LugaresController::class, 'show']);
 
 Route::get('/hospedajes', [HospedajeController::class, 'index']);
 Route::get('/hospedajes/{id}', [HospedajeController::class, 'show']);
-Route::get('/comentarios', [ComentariosController::class, 'index']);
 
-// Rutas Protegidas (Requieren Token)
+Route::get('/comentarios', [comentariosController::class, 'index']);
+Route::get('/favoritos', [favoritosController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
     
-    Route::post('/comentarios', [ComentariosController::class, 'store']);
-    Route::delete('/comentarios/{id}', [ComentariosController::class, 'destroy']);
+    Route::post('/comentarios', [comentariosController::class, 'store']);
+    Route::delete('/comentarios/{id}', [comentariosController::class, 'destroy']);
 
+    Route::post('/favoritos', [favoritosController::class, 'store']);
+    Route::delete('/favoritos/{id}', [favoritosController::class, 'destroy']);
+    Route::get('/favoritos/check/{id}', [favoritosController::class, 'check']);
+
+    // Sesión
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/lugares', [LugaresController::class, 'store']);
+    Route::put('/lugares/{id}', [LugaresController::class, 'update']);
+    Route::delete('/lugares/{id}', [LugaresController::class, 'destroy']);
+
+    Route::post('/hospedajes', [HospedajeController::class, 'store']);
+    Route::put('/hospedajes/{id}', [HospedajeController::class, 'update']);
+    Route::delete('/hospedajes/{id}', [HospedajeController::class, 'destroy']);
 });
