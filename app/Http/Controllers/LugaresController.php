@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lugares;
+use App\Models\Favorito;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class LugaresController extends Controller
 {
@@ -27,7 +29,6 @@ class LugaresController extends Controller
     public function index(Request $request)
     {
         try {
-            // Se agrega 'opiniones' a la carga para el index
             $query = Lugares::with(['municipio', 'opiniones']);
 
             if ($request->has('municipio_id') && !empty($request->municipio_id)) {
@@ -45,6 +46,13 @@ class LugaresController extends Controller
             $lugares = $query->get();
 
             $lugaresData = $lugares->map(function ($lugar) {
+                $isFavorite = false;
+                if (Auth::guard('sanctum')->check()) {
+                    $isFavorite = Favorito::where('usuario_id', Auth::guard('sanctum')->id())
+                        ->where('lugar_id', $lugar->id)
+                        ->exists();
+                }
+
                 return [
                     'id' => $lugar->id,
                     'nombre' => $lugar->nombre,
@@ -53,6 +61,7 @@ class LugaresController extends Controller
                     'municipio_id' => $lugar->municipio_id,
                     'imagen_url' => $this->getImagenPrincipalUrl($lugar->imagenes ?? []),
                     'ubicacion' => $lugar->ubicacion,
+                    'isFavorite' => $isFavorite, 
                     'comentarios' => $lugar->opiniones->map(fn($op) => [
                         'rating' => $op->rating,
                         'category' => $op->category ?? 'General'
@@ -76,6 +85,12 @@ class LugaresController extends Controller
             $todasLasImagenesUrls = collect($imagenesPaths)->map(function ($path) {
                  return filter_var($path, FILTER_VALIDATE_URL) ? $path : Storage::disk('s3')->url($path);
             })->toArray();
+            $isFavorite = false;
+            if (Auth::guard('sanctum')->check()) {
+                $isFavorite = Favorito::where('usuario_id', Auth::guard('sanctum')->id())
+                    ->where('lugar_id', $lugar->id)
+                    ->exists();
+            }
 
             return response()->json([
                 'id' => $lugar->id,
@@ -86,8 +101,8 @@ class LugaresController extends Controller
                 'imagen_principal_url' => $this->getImagenPrincipalUrl($imagenesPaths),
                 'todas_las_imagenes' => $todasLasImagenesUrls,
                 'ubicacion' => $lugar->ubicacion,
+                'isFavorite' => $isFavorite,
                 'hoteles_cercanos' => $lugar->hoteles_cercanos,
-                // Agregado del viejo: Detalle de comentarios para la HU-08
                 'comentarios' => $lugar->opiniones->map(function ($comentario) {
                     return [
                         'id' => $comentario->id,
