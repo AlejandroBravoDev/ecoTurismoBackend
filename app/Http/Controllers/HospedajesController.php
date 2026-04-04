@@ -102,7 +102,7 @@ class HospedajesController extends Controller
                 'descripcion' => $hospedaje->descripcion,
                 'coordenadas' => $hospedaje->coordenadas,
                 'municipio' => optional($hospedaje->municipio)->nombre,
-                'imagen_principal_url' => $this->getImagenPrincipalUrl($imagenesPaths),
+                'imagen_principal_url' =>   $this->getImagenPrincipalUrl($imagenesPaths),
                 'todas_las_imagenes' => $todasLasImagenesUrls,
                 'ubicacion' => $hospedaje->ubicacion,
                 'tipo' => $hospedaje->tipo,
