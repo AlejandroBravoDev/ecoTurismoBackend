@@ -110,4 +110,30 @@ class UsuariosController extends Controller
             ], 500);
         }
     }
+
+    // Eliminar usuario
+    public function destroy($id)
+    {
+        try {
+            $usuario = Usuario::findOrFail($id);
+
+            // Eliminar avatar si existe
+            if ($usuario->avatar && Storage::disk('s3')->exists($usuario->avatar)) {
+                Storage::disk('s3')->delete($usuario->avatar);
+            }
+
+            $usuario->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario eliminado correctamente'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar usuario'
+            ], 500);
+        }
+    }
 }
