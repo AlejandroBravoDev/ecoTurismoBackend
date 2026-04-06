@@ -20,7 +20,7 @@ class FavoritosControllerTest extends TestCase
             'nombre_completo' => 'Usuario Favoritos',
             'email' => 'favoritos@correo.com',
             'password' => 'password',
-            'rol' => 'usuario'
+            'rol' => 'user'
         ]);
 
         Sanctum::actingAs($usuario);

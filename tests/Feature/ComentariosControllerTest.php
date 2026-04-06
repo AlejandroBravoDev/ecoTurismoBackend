@@ -21,7 +21,7 @@ class ComentariosControllerTest extends TestCase
             'nombre_completo' => 'Usuario Prueba',
             'email' => 'prueba@correo.com',
             'password' => 'password',
-            'rol' => 'usuario' // Asegurando que tenga el rol necesario si se requiere
+            'rol' => 'user' // Asegurando que tenga el rol necesario si se requiere
         ]);
 
         // Autenticar como el usuario creado usando Sanctum

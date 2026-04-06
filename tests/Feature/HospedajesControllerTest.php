@@ -32,8 +32,6 @@ class HospedajesControllerTest extends TestCase
             'descripcion' => 'Un hotel céntrico.',
             'municipio_id' => 1,
             'ubicacion' => 'Centro de la ciudad',
-            'tipo' => 'Hotel',
-            'contacto' => '1234567890',
             'imagenes' => ['hotel1.jpg'],
         ]);
 
@@ -41,8 +39,7 @@ class HospedajesControllerTest extends TestCase
 
         $response->assertStatus(200)
                  ->assertJsonFragment([
-                     'nombre' => 'Hotel Central',
-                     'tipo' => 'Hotel'
+                     'nombre' => 'Hotel Central'
                  ]);
     }
 

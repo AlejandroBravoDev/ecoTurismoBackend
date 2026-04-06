@@ -99,7 +99,7 @@ class UsuariosControllerTest extends TestCase
             'nombre_completo' => 'Juan Viejo',
             'email' => 'viejo@correo.com',
             'password' => 'password',
-            'rol' => 'usuario' // Para Sanctum o admin
+            'rol' => 'user' // Para Sanctum o admin
         ]);
 
         Sanctum::actingAs($usuario);
