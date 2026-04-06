@@ -18,9 +18,9 @@ class HospedajesControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         DB::table('municipios')->insert([
-            'id' => 1,
+            'id'     => 1,
             'nombre' => 'Municipio de Prueba 2'
         ]);
     }
@@ -28,11 +28,11 @@ class HospedajesControllerTest extends TestCase
     public function test_obtener_lista_de_hospedajes()
     {
         Hospedaje::create([
-            'nombre' => 'Hotel Central',
-            'descripcion' => 'Un hotel céntrico.',
+            'nombre'       => 'Hotel Central',
+            'descripcion'  => 'Un hotel céntrico.',
             'municipio_id' => 1,
-            'ubicacion' => 'Centro de la ciudad',
-            'imagenes' => ['hotel1.jpg'],
+            'ubicacion'    => 'Centro de la ciudad',
+            'imagenes'     => json_encode(['hotel1.jpg']),
         ]);
 
         $response = $this->getJson('/api/hospedajes');
@@ -49,22 +49,22 @@ class HospedajesControllerTest extends TestCase
 
         $usuario = Usuario::create([
             'nombre_completo' => 'Admin Hospedajes',
-            'email' => 'admin_hospedajes@correo.com',
-            'password' => 'password',
-            'rol' => 'admin'
+            'email'           => 'admin_hospedajes@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($usuario);
 
-        $file = UploadedFile::fake()->image('hospedaje.jpg');
+        $file = UploadedFile::fake()->create('hospedaje.jpg', 100, 'image/jpeg');
 
         $payload = [
-            'nombre' => 'Cabaña Bosque',
-            'descripcion' => 'Una hermosa cabaña.',
+            'nombre'       => 'Cabaña Bosque',
+            'descripcion'  => 'Una hermosa cabaña.',
             'municipio_id' => 1,
-            'ubicacion' => 'En el bosque',
-            'coordenadas' => '10.1, -20.4',
-            'imagenes' => [$file],
+            'ubicacion'    => 'En el bosque',
+            'coordenadas'  => '10.1, -20.4',
+            'imagenes'     => [$file],
         ];
 
         $response = $this->postJson('/api/hospedajes', $payload);
@@ -72,15 +72,11 @@ class HospedajesControllerTest extends TestCase
         $response->assertStatus(201)
                  ->assertJsonStructure([
                      'message',
-                     'data' => [
-                         'id',
-                         'nombre',
-                         'imagen_principal_url'
-                     ]
+                     'data' => ['id', 'nombre', 'imagen_principal_url']
                  ]);
 
         $this->assertDatabaseHas('hospedajes', [
-            'nombre' => 'Cabaña Bosque',
+            'nombre'    => 'Cabaña Bosque',
             'ubicacion' => 'En el bosque'
         ]);
     }
@@ -91,24 +87,24 @@ class HospedajesControllerTest extends TestCase
 
         $usuario = Usuario::create([
             'nombre_completo' => 'Admin UpdHospedaje',
-            'email' => 'updhosp@correo.com',
-            'password' => 'password',
-            'rol' => 'admin'
+            'email'           => 'updhosp@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($usuario);
 
         $hospedaje = Hospedaje::create([
-            'nombre' => 'Hostal Viejo',
-            'descripcion' => 'Vieja desc',
+            'nombre'       => 'Hostal Viejo',
+            'descripcion'  => 'Vieja desc',
             'municipio_id' => 1,
-            'ubicacion' => 'Calle vieja',
-            'imagenes' => ['vieja.jpg']
+            'ubicacion'    => 'Calle vieja',
+            'imagenes'     => json_encode(['vieja.jpg'])
         ]);
 
         $payload = [
-            'nombre' => 'Hostal Nuevo',
-            'descripcion' => 'Nueva desc',
+            'nombre'              => 'Hostal Nuevo',
+            'descripcion'         => 'Nueva desc',
             'imagenes_existentes' => json_encode(['vieja.jpg'])
         ];
 
@@ -118,8 +114,8 @@ class HospedajesControllerTest extends TestCase
                  ->assertJson(['message' => 'Hospedaje actualizado correctamente']);
 
         $this->assertDatabaseHas('hospedajes', [
-            'id' => $hospedaje->id,
-            'nombre' => 'Hostal Nuevo',
+            'id'          => $hospedaje->id,
+            'nombre'      => 'Hostal Nuevo',
             'descripcion' => 'Nueva desc'
         ]);
     }
@@ -128,17 +124,18 @@ class HospedajesControllerTest extends TestCase
     {
         $usuario = Usuario::create([
             'nombre_completo' => 'Admin DelHospedaje',
-            'email' => 'delhosp@correo.com',
-            'password' => 'password',
-            'rol' => 'admin'
+            'email'           => 'delhosp@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($usuario);
 
         $hospedaje = Hospedaje::create([
-            'nombre' => 'Hostal Borrable',
-            'descripcion' => 'Se borrara',
-            'municipio_id' => 1
+            'nombre'       => 'Hostal Borrable',
+            'descripcion'  => 'Se borrara',
+            'municipio_id' => 1,
+            'imagenes'     => json_encode([])
         ]);
 
         $response = $this->deleteJson('/api/hospedajes/' . $hospedaje->id);

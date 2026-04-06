@@ -18,24 +18,20 @@ class LugaresControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
-        // Dado que puede faltar el modelo Municipios, insertamos directamente en la BD
-        // para cumplir con la regla de validación 'exists:municipios,id'
+
         DB::table('municipios')->insert([
-            'id' => 1,
-            'nombre' => 'Municipio de Prueba',
-            // Agrega otros campos si son not-null en tu migración
+            'id'     => 1,
+            'nombre' => 'Municipio de Prueba'
         ]);
     }
 
     public function test_obtener_lista_de_lugares()
     {
-        // Creamos un lugar manualmente
         Lugares::create([
-            'nombre' => 'Lugar de Montaña',
-            'descripcion' => 'Una descripción muy larga.',
+            'nombre'       => 'Lugar de Montaña',
+            'descripcion'  => 'Una descripción muy larga.',
             'municipio_id' => 1,
-            'imagenes' => ['fake-image-1.jpg'],
+            'imagenes'     => json_encode(['fake-image-1.jpg']),
         ]);
 
         $response = $this->getJson('/api/lugares');
@@ -52,22 +48,23 @@ class LugaresControllerTest extends TestCase
 
         $usuario = Usuario::create([
             'nombre_completo' => 'Admin Lugares',
-            'email' => 'admin_lugares@correo.com',
-            'password' => 'password',
-            'rol' => 'admin' // Suponiendo que debe ser admin, aunque la ruta auth:sanctum no explicite middleware admin
+            'email'           => 'admin_lugares@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($usuario);
 
-        $file = UploadedFile::fake()->image('lugar.jpg');
+        // UploadedFile::fake()->create() no requiere GD
+        $file = UploadedFile::fake()->create('lugar.jpg', 100, 'image/jpeg');
 
         $payload = [
-            'nombre' => 'Lugar Espectacular',
+            'nombre'      => 'Lugar Espectacular',
             'descripcion' => 'Descripción del lugar espectacular.',
-            'municipio_id' => 1,
-            'ubicacion' => 'En algún sitio',
+            'municipio_id'=> 1,
+            'ubicacion'   => 'En algún sitio',
             'coordenadas' => '10.123, -20.456',
-            'imagenes' => [$file],
+            'imagenes'    => [$file],
         ];
 
         $response = $this->postJson('/api/lugares', $payload);
@@ -75,15 +72,11 @@ class LugaresControllerTest extends TestCase
         $response->assertStatus(201)
                  ->assertJsonStructure([
                      'message',
-                     'data' => [
-                         'id',
-                         'nombre',
-                         'imagen_principal_url'
-                     ]
+                     'data' => ['id', 'nombre', 'imagen_principal_url']
                  ]);
 
         $this->assertDatabaseHas('lugares', [
-            'nombre' => 'Lugar Espectacular',
+            'nombre'    => 'Lugar Espectacular',
             'ubicacion' => 'En algún sitio'
         ]);
     }
@@ -94,29 +87,28 @@ class LugaresControllerTest extends TestCase
 
         $usuario = Usuario::create([
             'nombre_completo' => 'Admin Updater',
-            'email' => 'updater@correo.com',
-            'password' => 'password',
-            'rol' => 'admin'
+            'email'           => 'updater@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($usuario);
 
         $lugar = Lugares::create([
-            'nombre' => 'Lugar Original',
-            'descripcion' => 'Vieja descripción',
+            'nombre'       => 'Lugar Original',
+            'descripcion'  => 'Vieja descripción',
             'municipio_id' => 1,
-            'ubicacion' => 'Ubicacion vieja',
-            'coordenadas' => '0,0',
-            'imagenes' => ['vieja.jpg']
+            'ubicacion'    => 'Ubicacion vieja',
+            'coordenadas'  => '0,0',
+            'imagenes'     => json_encode(['vieja.jpg'])
         ]);
 
         $payload = [
-            'nombre' => 'Lugar Actualizado',
-            'descripcion' => 'Nueva descripción',
-            'ubicacion' => 'Nueva Ubicación',
-            'coordenadas' => '1,1',
-            'imagenes_existentes' => json_encode(['vieja.jpg']), // Enviar imagen vieja
-            // Sin imagenes_nuevas para probar simple actualización
+            'nombre'              => 'Lugar Actualizado',
+            'descripcion'         => 'Nueva descripción',
+            'ubicacion'           => 'Nueva Ubicación',
+            'coordenadas'         => '1,1',
+            'imagenes_existentes' => json_encode(['vieja.jpg']),
         ];
 
         $response = $this->putJson('/api/lugares/' . $lugar->id, $payload);
@@ -125,8 +117,8 @@ class LugaresControllerTest extends TestCase
                  ->assertJson(['message' => 'Lugar actualizado correctamente']);
 
         $this->assertDatabaseHas('lugares', [
-            'id' => $lugar->id,
-            'nombre' => 'Lugar Actualizado',
+            'id'          => $lugar->id,
+            'nombre'      => 'Lugar Actualizado',
             'descripcion' => 'Nueva descripción'
         ]);
     }
@@ -137,18 +129,18 @@ class LugaresControllerTest extends TestCase
 
         $usuario = Usuario::create([
             'nombre_completo' => 'Admin Deleter',
-            'email' => 'deleter@correo.com',
-            'password' => 'password',
-            'rol' => 'admin'
+            'email'           => 'deleter@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($usuario);
 
         $lugar = Lugares::create([
-            'nombre' => 'Lugar a Borrar',
-            'descripcion' => 'Se va a borrar',
+            'nombre'       => 'Lugar a Borrar',
+            'descripcion'  => 'Se va a borrar',
             'municipio_id' => 1,
-            'imagenes' => ['test.jpg']
+            'imagenes'     => json_encode(['test.jpg'])
         ]);
 
         $response = $this->deleteJson('/api/lugares/' . $lugar->id);

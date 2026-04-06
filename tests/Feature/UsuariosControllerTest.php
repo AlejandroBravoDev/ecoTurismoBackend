@@ -17,9 +17,9 @@ class UsuariosControllerTest extends TestCase
     {
         $usuarioAdmin = Usuario::create([
             'nombre_completo' => 'Admin Verador',
-            'email' => 'adminverador@correo.com',
-            'password' => 'password',
-            'rol' => 'admin'
+            'email'           => 'adminverador@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($usuarioAdmin);
@@ -39,9 +39,9 @@ class UsuariosControllerTest extends TestCase
     {
         $usuario = Usuario::create([
             'nombre_completo' => 'Usuario Unico',
-            'email' => 'unico@correo.com',
-            'password' => 'password',
-            'rol' => 'user'
+            'email'           => 'unico@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'user'
         ]);
 
         Sanctum::actingAs($usuario);
@@ -51,7 +51,7 @@ class UsuariosControllerTest extends TestCase
         $response->assertStatus(200)
                  ->assertJsonFragment([
                      'nombre_completo' => 'Usuario Unico',
-                     'email' => 'unico@correo.com'
+                     'email'           => 'unico@correo.com'
                  ]);
     }
 
@@ -61,20 +61,21 @@ class UsuariosControllerTest extends TestCase
 
         $admin = Usuario::create([
             'nombre_completo' => 'Admin Creador',
-            'email' => 'admincreador@correo.com',
-            'password' => 'password',
-            'rol' => 'admin'
+            'email'           => 'admincreador@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'admin'
         ]);
 
         Sanctum::actingAs($admin);
 
-        $file = UploadedFile::fake()->image('nuevo_avatar.jpg');
+        // create() no requiere GD, image() sí
+        $file = UploadedFile::fake()->create('nuevo_avatar.jpg', 100, 'image/jpeg');
 
         $payload = [
             'nombre_completo' => 'Nuevo Registrado',
-            'email' => 'nuevoddd@correo.com',
-            'password' => 'Password123!',
-            'avatar' => $file
+            'email'           => 'nuevoddd@correo.com',
+            'password'        => 'Password123!',
+            'avatar'          => $file
         ];
 
         $response = $this->postJson('/api/usuario', $payload);
@@ -86,7 +87,7 @@ class UsuariosControllerTest extends TestCase
                  ]);
 
         $this->assertDatabaseHas('usuarios', [
-            'email' => 'nuevoddd@correo.com',
+            'email'           => 'nuevoddd@correo.com',
             'nombre_completo' => 'Nuevo Registrado'
         ]);
     }
@@ -97,34 +98,33 @@ class UsuariosControllerTest extends TestCase
 
         $usuario = Usuario::create([
             'nombre_completo' => 'Juan Viejo',
-            'email' => 'viejo@correo.com',
-            'password' => 'password',
-            'rol' => 'user' // Para Sanctum o admin
+            'email'           => 'viejo@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'user'
         ]);
 
         Sanctum::actingAs($usuario);
 
-        $file = UploadedFile::fake()->image('avatar.jpg');
+        $file = UploadedFile::fake()->create('avatar.jpg', 100, 'image/jpeg');
 
         $payload = [
             'nombre_completo' => 'Juan Nuevo',
-            'email' => 'nuevo@correo.com',
-            'avatar' => $file
+            'email'           => 'nuevo@correo.com',
+            'avatar'          => $file
         ];
 
-        // Observa que en api.php especificas PUT y envías multipart -> en Laravel puede fallar, usaremos un truco o enviamos con post y _method=PUT
         $response = $this->putJson('/api/usuario/' . $usuario->id, $payload);
 
         $response->assertStatus(200)
                  ->assertJson([
-                     'success' => true,
-                     'message' => 'Usuario actualizado correctamente',
+                     'success'  => true,
+                     'message'  => 'Usuario actualizado correctamente',
                  ]);
 
         $this->assertDatabaseHas('usuarios', [
-            'id' => $usuario->id,
+            'id'              => $usuario->id,
             'nombre_completo' => 'Juan Nuevo',
-            'email' => 'nuevo@correo.com'
+            'email'           => 'nuevo@correo.com'
         ]);
     }
 
@@ -132,12 +132,11 @@ class UsuariosControllerTest extends TestCase
     {
         Storage::fake('s3');
 
-        // Usuario para autenticar la petición y a la vez ser borrado (o usar otro admin)
         $usuario = Usuario::create([
             'nombre_completo' => 'A Eliminar',
-            'email' => 'borrar@correo.com',
-            'password' => 'password',
-            'avatar' => 'avatars/viejo.jpg' // Simular que tiene avatar en s3
+            'email'           => 'borrar@correo.com',
+            'password'        => bcrypt('password'),
+            'rol'             => 'user'
         ]);
 
         Sanctum::actingAs($usuario);
