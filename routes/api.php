@@ -8,6 +8,8 @@ use App\Http\Controllers\HospedajesController;
 use App\Http\Controllers\comentariosController;
 use App\Http\Controllers\favoritosController;
 use App\Http\Controllers\UsuariosController;
+use App\Http\Controllers\PerfilController;
+
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -22,6 +24,10 @@ Route::get('/favoritos', [favoritosController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     
+
+    Route::get('/perfil', [PerfilController::class, 'show']);
+    Route::post('/perfil/update', [PerfilController::class, 'update']);
+
     Route::post('/comentarios', [comentariosController::class, 'store']);
     Route::delete('/comentarios/{id}', [comentariosController::class, 'destroy']);
 
