@@ -48,6 +48,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/hospedajes/{id}', [HospedajesController::class, 'destroy']);
 
     /*Rutas protegidas*/
+    Route::get('/usuario', [UsuariosController::class, 'index']);
+    Route::get('/usuario/{id}', [UsuariosController::class, 'show']);
     Route::post('/usuario', [UsuariosController::class, 'store']);
     Route::put('/usuario/{id}', [UsuariosController::class, 'update']);
     Route::delete('/usuario/{id}', [UsuariosController::class, 'destroy']);

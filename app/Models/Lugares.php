@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Comentarios;
-use App\Models\municipios;
+use App\Models\Municipios;
 use App\Models\Usuario;
 
 class Lugares extends Model
@@ -26,15 +26,13 @@ class Lugares extends Model
 
     protected $casts = [
         'hoteles_cercanos' => 'array',
-        'recomendaciones' => 'array',
-        'imagenes' => 'array',
+        'recomendaciones'  => 'array',
+        'imagenes'         => 'array',
     ];
 
     protected $appends = [
         'rating_promedio',
         'total_comentarios',
-        'imagen_principal_url',
-        'imagenes_url',
     ];
 
     public function getRatingPromedioAttribute()
@@ -46,26 +44,6 @@ class Lugares extends Model
     public function getTotalComentariosAttribute()
     {
         return $this->opiniones()->count();
-    }
-
-    public function getImagenPrincipalUrlAttribute()
-    {
-        if (empty($this->imagenes)) {
-            return null;
-        }
-
-        return Storage::disk('s3')->url($this->imagenes[0]);
-    }
-
-    public function getImagenesUrlAttribute()
-    {
-        if (empty($this->imagenes)) {
-            return [];
-        }
-
-        return collect($this->imagenes)->map(fn ($img) =>
-            Storage::disk('s3')->url($img)
-        )->toArray();
     }
 
     public function municipio()
