@@ -13,6 +13,20 @@ use App\Http\Controllers\MunicipioController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+use App\Http\Controllers\LugaresController;
+use App\Http\Controllers\HospedajeController;
+use App\Http\Controllers\comentariosController;
+use App\Http\Controllers\favoritosController;
+use App\Http\Controllers\PasswordResetController;
+
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+Route::get('/lugares', [LugaresController::class, 'index']);
+Route::get('/lugares/{id}', [LugaresController::class, 'show']);
+
+Route::get('/hospedajes', [HospedajeController::class, 'index']);
+Route::get('/hospedajes/{id}', [HospedajeController::class, 'show']);
 
 Route::get('/lugares', [LugaresController::class, 'index']);
 Route::get('/lugares/{id}', [LugaresController::class, 'show']);
@@ -23,6 +37,11 @@ Route::get('/hospedajes/{id}', [HospedajesController::class, 'show']);
 Route::get('/comentarios', [comentariosController::class, 'index']);
 Route::get('/favoritos', [favoritosController::class, 'index']);
 
+Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    
 Route::middleware('auth:sanctum')->group(function () {
     
 
@@ -43,6 +62,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/lugares/{id}', [LugaresController::class, 'update']);
     Route::delete('/lugares/{id}', [LugaresController::class, 'destroy']);
 
+    Route::post('/hospedajes', [HospedajeController::class, 'store']);
+    Route::put('/hospedajes/{id}', [HospedajeController::class, 'update']);
+    Route::delete('/hospedajes/{id}', [HospedajeController::class, 'destroy']);
+});
     Route::post('/hospedajes', [HospedajesController::class, 'store']);
     Route::put('/hospedajes/{id}', [HospedajesController::class, 'update']);
     Route::delete('/hospedajes/{id}', [HospedajesController::class, 'destroy']);
