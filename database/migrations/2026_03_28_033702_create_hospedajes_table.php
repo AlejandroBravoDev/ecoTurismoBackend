@@ -21,8 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('municipio_id')->nullable();
             $table->text('lugares')->nullable();
             $table->string('coordenadas', 133)->nullable();
-            $table->string('updated_at', 250)->nullable();
-            $table->datetime('created_at')->nullable()->default(DB::raw('current_timestamp()'));
+            $table->timestamps();
 
             $table->foreign('municipio_id')->references('id')->on('municipios')->nullOnDelete();
         });

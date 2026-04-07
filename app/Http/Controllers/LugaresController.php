@@ -211,8 +211,12 @@ class LugaresController extends Controller
     {
         try {
             $lugar = Lugares::findOrFail($id);
-            if (!empty($lugar->imagenes)) {
-                foreach ($lugar->imagenes as $path) {
+            $imagenes = is_array($lugar->imagenes) 
+                ? $lugar->imagenes 
+                : json_decode($lugar->imagenes, true) ?? [];
+                
+            if (!empty($imagenes)) {
+                foreach ($imagenes as $path) {
                     if (!filter_var($path, FILTER_VALIDATE_URL)) {
                         Storage::disk('s3')->delete($path);
                     }

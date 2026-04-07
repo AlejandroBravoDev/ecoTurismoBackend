@@ -22,8 +22,7 @@ return new class extends Migration
             $table->text('comentarios')->nullable();
             $table->text('imagenes')->nullable();
             $table->text('recomendaciones')->nullable();
-            $table->string('updated_at', 250)->nullable();
-            $table->datetime('created_at')->nullable()->default(DB::raw('current_timestamp()'));
+            $table->timestamps();
 
             $table->foreign('municipio_id')->references('id')->on('municipios')->nullOnDelete();
         });

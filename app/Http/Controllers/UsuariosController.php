@@ -64,6 +64,49 @@ class UsuariosController extends Controller
         }
     }
 
+    // Crear usuario (store)
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'nombre_completo' => 'required|string|max:255',
+                'email' => 'required|email|unique:usuarios,email',
+                'password' => 'required|string|min:8',
+                'avatar' => 'nullable|image|max:2048'
+            ]);
+
+            $avatarPath = null;
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $request->file('avatar')->store('avatars', 's3');
+            }
+
+            $usuario = Usuario::create([
+                'nombre_completo' => $request->nombre_completo,
+                'email' => strtolower($request->email),
+                'password' => $request->password,
+                'avatar' => $avatarPath,
+                'rol' => 'user' // Default o recibir del request si es admin
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Usuario creado exitosamente',
+                'data' => [
+                    'id' => $usuario->id,
+                    'nombre_completo' => $usuario->nombre_completo,
+                    'email' => $usuario->email,
+                    'avatar_url' => $usuario->avatar_url,
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear usuario'
+            ], 500);
+        }
+    }
+
     // Actualizar usuario
     public function update(Request $request, $id)
     {
