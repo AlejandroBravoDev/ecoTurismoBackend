@@ -10,13 +10,7 @@ use App\Http\Controllers\favoritosController;
 use App\Http\Controllers\UsuariosController;
 use App\Http\Controllers\PerfilController;
 use App\Http\Controllers\MunicipioController;
-
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-use App\Http\Controllers\LugaresController;
 use App\Http\Controllers\HospedajeController;
-use App\Http\Controllers\comentariosController;
-use App\Http\Controllers\favoritosController;
 use App\Http\Controllers\PasswordResetController;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -25,8 +19,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/lugares', [LugaresController::class, 'index']);
 Route::get('/lugares/{id}', [LugaresController::class, 'show']);
 
-Route::get('/hospedajes', [HospedajeController::class, 'index']);
-Route::get('/hospedajes/{id}', [HospedajeController::class, 'show']);
+Route::get('/hospedajes', [HospedajesController::class, 'index']);
+Route::get('/hospedajes/{id}', [HospedajesController::class, 'show']);
 
 Route::get('/lugares', [LugaresController::class, 'index']);
 Route::get('/lugares/{id}', [LugaresController::class, 'show']);
